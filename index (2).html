@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vehicle Booking – NCQ 6924 & PIU 807</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7f9;--card:#fff;--tx:#1c2330;--mut:#6b7585;--bd:#dfe3ea;--a:#1d4ed8;--b:#c2410c;--ok:#15803d;--no:#b91c1c;--pen:#a16207}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151b;--card:#1b2029;--tx:#e8ecf3;--mut:#9aa4b5;--bd:#2c3340;--a:#6b9bff;--b:#fb923c;--ok:#4ade80;--no:#f87171;--pen:#facc15}}
+:root[data-theme="dark"]{--bg:#12151b;--card:#1b2029;--tx:#e8ecf3;--mut:#9aa4b5;--bd:#2c3340;--a:#6b9bff;--b:#fb923c;--ok:#4ade80;--no:#f87171;--pen:#facc15}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:1000px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 2px}.sub{color:var(--mut);margin:0 0 14px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.nav button,.btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+.btn.p{background:var(--a);color:#fff;border-color:var(--a)}
+.btn.ok{color:var(--ok);border-color:var(--ok)}.btn.no{color:var(--no);border-color:var(--no)}
+.leg{display:flex;gap:12px;font-size:13px;color:var(--mut);flex-wrap:wrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dh{font-size:12px;color:var(--mut);text-align:center;padding:2px}
+.d{min-height:96px;border:1px solid var(--bd);border-radius:8px;padding:3px;background:var(--bg);overflow:hidden}
+.d.o{opacity:.4}.d.t{border-color:var(--a);border-width:2px}
+.d b{font-size:12px;color:var(--mut)}
+.ev{font-size:11px;border-radius:4px;padding:1px 4px;margin-top:2px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.A{background:var(--a)}.ev.B{background:var(--b)}
+.ev.pending{background:repeating-linear-gradient(45deg,transparent 0 4px,rgba(255,255,255,.25) 4px 8px)}
+.ev.pending.A{background-color:var(--a)}.ev.pending.B{background-color:var(--b)}
+form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+form label{display:flex;flex-direction:column;font-size:13px;color:var(--mut);gap:3px}
+form .f{grid-column:1/-1}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px;width:100%}
+.err{color:var(--no);font-size:13px;grid-column:1/-1;min-height:16px}
+.row{border-top:1px solid var(--bd);padding:10px 0;display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.row:first-child{border-top:0}
+.ev.x{background:var(--mut);text-decoration:line-through;opacity:.75}
+.av{font-size:11px;color:var(--ok);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid currentColor}
+.tag.pending{color:var(--pen)}.tag.approved{color:var(--ok)}.tag.rejected{color:var(--no)}
+.sm{font-size:13px;color:var(--mut)}
+.scroll{overflow-x:auto}
+@media(max-width:560px){form{grid-template-columns:1fr}.d{min-height:56px}.ev{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="w">
+  <h1>Booking ng Sasakyan</h1>
+  <p class="sub">NCQ 6924 at PIU 807 · Mag-request, tingnan sa calendar, at hintayin ang approval ng admin.</p>
+
+  <div class="card">
+    <div class="top">
+      <div class="nav"><button id="prev">◀</button> <b id="mt" style="margin:0 8px"></b> <button id="next">▶</button></div>
+      <div class="leg"><span><i class="dot" style="background:var(--a)"></i>NCQ 6924</span><span><i class="dot" style="background:var(--b)"></i>PIU 807</span><span>Striped = Pending</span><span>Gray = Cancelled</span><span style="color:var(--ok)">Green = Available</span></div>
+    </div>
+    <div class="scroll"><div class="cal" id="cal" style="min-width:560px"></div></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;margin:0 0 10px">Request Form</h2>
+    <form id="fm">
+      <label>Vehicle<select id="veh"><option>NCQ 6924</option><option>PIU 807</option></select></label>
+      <label>Requested by (full name)<input id="by" required placeholder="First name and last name"></label>
+      <label>Date from<input id="d1" type="date" required></label>
+      <label>Date to<input id="d2" type="date" required></label>
+      <label>Departure time (optional)<input id="t1" type="time"></label>
+      <label>Return time (optional)<input id="t2" type="time"></label>
+      <label>Destination<input id="dest" required></label>
+      <label>Driver<input id="drv" required></label>
+      <label class="f">Department<input id="dept" required></label>
+      <label class="f">Purpose<textarea id="pur" rows="2" required></textarea></label>
+      <div class="err" id="err"></div>
+      <div class="f"><button class="btn p" id="sub" type="submit">Submit Request</button></div>
+    </form>
+  </div>
+
+  <div class="card" id="lc" style="display:none">
+    <h2 style="font-size:16px;margin:0 0 4px">Requests <span class="sm" id="role"></span></h2>
+    <div id="list" class="sm">Loading…</div>
+  </div>
+</div>
+
+<script>
+var db=null,isAdmin=false,reqs=[],cur=new Date();cur.setDate(1);
+var $=function(i){return document.getElementById(i)};
+function esc(s){var d=document.createElement('div');d.textContent=s==null?'':s;return d.innerHTML}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function cls(v){return v==='NCQ 6924'?'A':'B'}
+var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function drawCal(){
+  var y=cur.getFullYear(),m=cur.getMonth();$('mt').textContent=MN[m]+' '+y;
+  var h='';['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(x){h+='<div class="dh">'+x+'</div>'});
+  var start=new Date(y,m,1-new Date(y,m,1).getDay()),today=iso(new Date());
+  for(var i=0;i<42;i++){
+    var d=new Date(start);d.setDate(start.getDate()+i);var k=iso(d);
+    h+='<div class="d'+(d.getMonth()!==m?' o':'')+(k===today?' t':'')+'"><b>'+d.getDate()+'</b>';
+    ['NCQ 6924','PIU 807'].forEach(function(v){
+      var sh=v.slice(0,3),on=function(r){return r.veh===v&&r.d1<=k&&k<=r.d2};
+      var act=reqs.filter(function(r){return on(r)&&r.status!=='rejected'});
+      act.forEach(function(r){
+        h+='<div class="ev '+cls(v)+' '+r.status+'" title="'+esc(v+' · '+(r.status==='pending'?'Pending':'Booked')+' · '+r.dest+' · '+r.drv+' · '+r.dept+' · '+r.by)+'">'+sh+' · '+(r.status==='pending'?'Pending':'Booked')+' – '+esc(r.dest)+'</div>';
+      });
+      reqs.filter(function(r){return on(r)&&r.status==='rejected'}).forEach(function(r){
+        h+='<div class="ev x" title="'+esc(v+' · Cancelled · '+r.dest+' · '+r.by)+'">'+sh+' · Cancelled</div>';
+      });
+      if(!act.length&&k>=today)h+='<div class="av">'+sh+' · Available</div>';
+    });
+    h+='</div>';
+  }
+  $('cal').innerHTML=h;
+}
+function drawList(){
+  $('role').textContent=isAdmin?'(Admin view)':'';$('lc').style.display=isAdmin?'':'none';
+  if(!reqs.length){$('list').textContent='No requests yet.';return}
+  var s=reqs.slice().sort(function(a,b){return b.created-a.created}),h='';
+  s.forEach(function(r){
+    var lab={pending:'Pending',approved:'Approved',rejected:'Cancelled'}[r.status];
+    h+='<div class="row"><div style="color:var(--tx)"><b>'+esc(r.veh)+'</b> <span class="tag '+r.status+'">'+lab+'</span><br>'+
+    esc(r.d1)+(r.d2!==r.d1?' → '+esc(r.d2):'')+(r.t1?' · '+esc(r.t1)+(r.t2?'–'+esc(r.t2):''):'')+'<br>'+
+    '<span class="sm">Destination: '+esc(r.dest)+' · Driver: '+esc(r.drv)+' · Dept: '+esc(r.dept)+' · Booked by: '+esc(r.by)+(r.pur?' · '+esc(r.pur):'')+'</span></div>';
+    if(isAdmin){
+      h+='<div>';
+      if(r.status!=='approved')h+='<button class="btn ok" data-a="approved" data-id="'+esc(r.id)+'">Approve</button> ';
+      if(r.status!=='rejected')h+='<button class="btn no" data-a="rejected" data-id="'+esc(r.id)+'">Cancel / Reject</button> ';
+      h+='<button class="btn" data-a="del" data-id="'+esc(r.id)+'">Delete</button></div>';
+    }
+    h+='</div>';
+  });
+  $('list').innerHTML=h;
+}
+function draw(){drawCal();drawList()}
+
+$('prev').onclick=function(){cur.setMonth(cur.getMonth()-1);drawCal()};
+$('next').onclick=function(){cur.setMonth(cur.getMonth()+1);drawCal()};
+
+$('list').onclick=function(e){
+  var b=e.target.closest('button');if(!b||!db)return;
+  var ref=db.collection('requests').doc(b.dataset.id);
+  (b.dataset.a==='del'?ref.delete():ref.update({status:b.dataset.a})).catch(function(){alert('Hindi nagawa. Admin lang ang pwedeng mag-approve.')});
+};
+
+$('fm').onsubmit=function(e){
+  e.preventDefault();$('err').textContent='';
+  if(!db){$('err').textContent='Database is unavailable.';return}
+  var r={veh:$('veh').value,by:$('by').value.trim(),d1:$('d1').value,d2:$('d2').value,t1:$('t1').value,t2:$('t2').value,
+    dest:$('dest').value.trim(),drv:$('drv').value.trim(),dept:$('dept').value.trim(),pur:$('pur').value.trim(),status:'pending',created:Date.now()};
+  if(r.by.split(/\s+/).length<2){$('err').textContent='Please enter your full name (first and last name).';return}
+  if(r.d2<r.d1){$('err').textContent='"Date to" cannot be earlier than "Date from".';return}
+  var clash=reqs.filter(function(x){return x.veh===r.veh&&x.status!=='rejected'&&x.d1<=r.d2&&r.d1<=x.d2});
+  if(clash.length){$('err').textContent=r.veh+' is already booked ('+clash[0].d1+(clash[0].d2!==clash[0].d1?' → '+clash[0].d2:'')+', '+clash[0].status+'). Please choose another date or vehicle.';return}
+  $('sub').disabled=true;
+  db.collection('requests').add(r).then(function(){$('fm').reset();$('err').style.color='var(--ok)';$('err').textContent='Submitted! Please wait for the admin’s approval.';
+    setTimeout(function(){$('err').textContent='';$('err').style.color=''},4000)})
+  .catch(function(){$('err').textContent='Could not submit. Please check your connection and try again.'})
+  .then(function(){$('sub').disabled=false});
+};
+
+var SCRIPT_URL='PASTE_YOUR_WEB_APP_URL_HERE',PIN_IN='';
+function post(b){return fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(b)}).then(function(r){return r.json()})}
+function remoteDb(){
+  var subs=[];
+  function pull(){fetch(SCRIPT_URL).then(function(r){return r.json()}).then(function(j){
+    var docs=(j.rows||[]).map(function(o){o.created=Number(o.created)||0;return {id:o.id,data:function(){return o}}});
+    subs.forEach(function(f){f({docs:docs})})}).catch(function(){})}
+  function chk(j){if(!j.ok)throw new Error(j.error||'fail');pull()}
+  setInterval(pull,15000);
+  return {collection:function(){return {
+    add:function(r){return post({action:'add',data:r}).then(chk)},
+    doc:function(id){return {
+      update:function(p){return post({action:'status',id:id,status:p.status,pin:PIN_IN}).then(chk)},
+      delete:function(){return post({action:'delete',id:id,pin:PIN_IN}).then(chk)}}},
+    onSnapshot:function(f){subs.push(f);pull()}}}};
+}
+draw();
+db=remoteDb();
+(function(){
+  var b=document.createElement('button');b.className='btn';b.textContent='Admin login';b.style.marginLeft='8px';
+  b.onclick=function(){var p=prompt('Admin PIN:');if(p===null)return;
+    post({action:'auth',pin:p}).then(function(j){if(j.ok){PIN_IN=p;isAdmin=true;b.remove();drawList()}else alert('Wrong PIN')}).catch(function(){alert('Cannot reach the server')})};
+  $('role').after(b);
+  db.collection('requests').onSnapshot(function(s){
+    reqs=s.docs.map(function(d){var x=Object.assign({},d.data());x.id=d.id;return x});draw();
+  });
+})();
+</script>
+</body>
+</html>
